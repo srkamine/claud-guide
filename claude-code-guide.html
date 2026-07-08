@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — CLI to Production Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b}
+  a{color:inherit}
+
+  /* Header */
+  .header{background:linear-gradient(135deg,#1e1b4b,#312e81 55%,#4338ca);padding:24px 20px 16px;color:#fff}
+  .header-inner{max-width:860px;margin:0 auto}
+  .header-eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a5b4fc;margin-bottom:4px;font-weight:700}
+  .header h1{font-size:22px;font-weight:800;margin-bottom:4px}
+  .header p{font-size:12px;color:#c7d2fe}
+
+  /* Nav */
+  .nav{background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:100;overflow-x:auto}
+  .nav-inner{max-width:860px;margin:0 auto;display:flex;white-space:nowrap;padding:0 4px}
+  .nav-btn{padding:10px 11px;border:none;background:none;cursor:pointer;font-size:11.5px;font-weight:500;color:#64748b;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;transition:all .15s;font-family:inherit}
+  .nav-btn:hover{color:#1e293b}
+  .nav-btn.active{font-weight:700;border-bottom-color:var(--c)}
+  .nav-btn.prod{background:#fdf4ff;color:#9333ea}
+  .nav-btn.prod.active{color:var(--c)}
+
+  /* Content */
+  .content{max-width:860px;margin:0 auto;padding:20px 14px 60px}
+  .section-header{border-radius:10px;padding:12px 16px;margin-bottom:18px;border:1px solid rgba(0,0,0,.06)}
+  .section-header h2{font-size:17px;font-weight:800}
+  .section-tag{font-size:10.5px;font-weight:700;color:#9333ea;margin-top:2px}
+
+  /* Typography */
+  .p{font-size:13.5px;color:#475569;line-height:1.75;margin:8px 0}
+  .h2{font-size:14.5px;font-weight:800;color:#1e293b;margin:20px 0 8px;border-bottom:1px solid #f1f5f9;padding-bottom:5px}
+
+  /* Code blocks */
+  .code-wrap{position:relative;margin:10px 0}
+  .code-wrap pre{background:#0f172a;color:#e2e8f0;border-radius:9px;padding:13px 16px;font-size:12px;line-height:1.72;overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-family:'JetBrains Mono','Fira Code',monospace;border:1px solid #1e293b}
+  .copy-btn{position:absolute;top:8px;right:8px;background:#334155;color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;font-weight:700;font-family:inherit;transition:background .2s}
+  .copy-btn:hover{background:#475569}
+  .copy-btn.ok{background:#22c55e}
+
+  /* Cards */
+  .card{border-radius:9px;margin-bottom:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.06)}
+  .card-border{border-left:4px solid var(--c)}
+  .card-header{padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:11px;user-select:none}
+  .card-icon{font-size:19px;flex-shrink:0}
+  .card-title{font-weight:700;font-size:13.5px;color:#1e293b}
+  .card-sub{font-size:11.5px;color:#64748b;margin-top:1px}
+  .card-arrow{color:#94a3b8;font-size:13px;margin-left:auto;flex-shrink:0}
+  .card-body{padding:0 14px 14px;border-top:1px solid rgba(0,0,0,.04);display:none}
+  .card-body.open{display:block}
+  .card-body-inner{padding-top:10px}
+
+  /* Boxes */
+  .box{border-radius:0 7px 7px 0;padding:9px 13px;margin:10px 0;font-size:13px;color:#1e293b;line-height:1.6}
+  .box-tip{background:#f0fdf4;border-left:3px solid #16a34a}
+  .box-info{background:#eff6ff;border-left:3px solid #2563eb}
+  .box-warn{background:#fffbeb;border-left:3px solid #d97706}
+  .box b{font-weight:700}
+
+  /* Grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+  .grid-pill{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:10px 12px;display:flex;gap:9px;align-items:flex-start}
+  .grid-pill-icon{font-size:17px}
+  .grid-pill-label{font-weight:700;font-size:12px;color:#1e293b}
+  .grid-pill-desc{font-size:11px;color:#64748b;margin-top:2px}
+
+  /* Plan mode comparison */
+  .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .plan-box{border-radius:7px;padding:10px 12px}
+  .plan-box-blue{background:#f0f9ff;border:1px solid #bae6fd}
+  .plan-box-green{background:#f0fdf4;border:1px solid #bbf7d0}
+  .plan-box-label{font-weight:800;font-size:12px;margin-bottom:3px}
+  .plan-box-desc{font-size:12px;color:#475569;line-height:1.6}
+
+  /* GitHub badge */
+  .gh-badge{display:inline-flex;align-items:center;gap:6px;background:#24292f;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;margin-top:8px}
+  .gh-badge:hover{background:#444d56}
+
+  /* Footer */
+  .footer{text-align:center;padding:40px 20px;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0;margin-top:40px}
+
+  @media(max-width:600px){
+    .grid2,.plan-grid{grid-template-columns:1fr}
+    .header h1{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Practical Learning Guide — 2026</div>
+    <h1>Claude Code — CLI to Production</h1>
+    <p>14 sections · Tools explained · Agents & settings · Custom MCP · Backend integration patterns</p>
+    <a class="gh-badge" href="https://github.com" target="_blank">
+      ⭐ Star on GitHub
+    </a>
+  </div>
+</div>
+
+<div class="nav" id="nav">
+  <div class="nav-inner" id="nav-inner"></div>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="footer">
+  Built with ❤️ for the Claude Code community · 
+  <a href="https://code.claude.com/docs" target="_blank">Official Docs</a> · 
+  <a href="https://github.com/anthropics/claude-code" target="_blank">Claude Code GitHub</a>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const SECTIONS = [
+  {id:"setup",    label:"⚙️ Setup",        title:"Installation & First Session",     color:"#6366f1", bg:"#eef2ff"},
+  {id:"claudemd", label:"📋 CLAUDE.md",    title:"CLAUDE.md — Project Memory",       color:"#0f766e", bg:"#f0fdfa"},
+  {id:"commands", label:"⌨️ Commands",      title:"Slash Commands & Shortcuts",       color:"#0369a1", bg:"#f0f9ff"},
+  {id:"tools",    label:"🔧 Tools",         title:"Built-in Tools — Each Explained",  color:"#059669", bg:"#ecfdf5"},
+  {id:"planmode", label:"📐 Plan Mode",     title:"Plan Mode — Two Different Ways",   color:"#b45309", bg:"#fffbeb"},
+  {id:"agents",   label:"🤖 Agents",        title:"Agents & settings.json Explained", color:"#7c3aed", bg:"#f5f3ff"},
+  {id:"skills",   label:"🎯 Skills",         title:"Skills — Reusable Workflows",      color:"#be185d", bg:"#fdf2f8"},
+  {id:"hooks",    label:"🪝 Hooks",          title:"Hooks — Lifecycle Automation",     color:"#dc2626", bg:"#fef2f2"},
+  {id:"mcp",      label:"🔌 MCP",           title:"MCP — Pre-built & Custom Servers", color:"#d97706", bg:"#fffbeb"},
+  {id:"multi",    label:"🧩 Multi-Agent",   title:"Multi-Agent Patterns",             color:"#9333ea", bg:"#faf5ff"},
+  {id:"headless", label:"🚀 Headless/CI",   title:"Headless Mode & CI/CD",            color:"#475569", bg:"#f8fafc"},
+  {id:"sdk",      label:"🏗️ Agent SDK",     title:"Agent SDK — Embed in Your App",    color:"#c026d3", bg:"#fdf4ff"},
+  {id:"backend",  label:"🖥️ Backend",       title:"Backend Integration Patterns",     color:"#16a34a", bg:"#f0fdf4"},
+  {id:"prod",     label:"🔐 Production",    title:"Production: Security & Scale",     color:"#b91c1c", bg:"#fef2f2"},
+];
+const PROD = new Set(["sdk","backend","prod"]);
+let active = "setup";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") }
+
+function code(text){
+  return `<div class="code-wrap">
+    <pre>${esc(text)}</pre>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>`;
+}
+
+function box(type, html){
+  return `<div class="box box-${type}">${html}</div>`;
+}
+
+function card(icon, title, sub, color, html){
+  const id = "c" + Math.random().toString(36).slice(2);
+  return `<div class="card card-border" style="--c:${color}">
+    <div class="card-header" onclick="toggleCard('${id}')">
+      <span class="card-icon">${icon}</span>
+      <div><div class="card-title">${title}</div>${sub?`<div class="card-sub">${sub}</div>`:""}
+      </div><span class="card-arrow" id="arr-${id}">▼</span>
+    </div>
+    <div class="card-body" id="${id}">
+      <div class="card-body-inner">${html}</div>
+    </div>
+  </div>`;
+}
+
+function h2(t){ return `<div class="h2">${t}</div>` }
+function p(t){ return `<p class="p">${t}</p>` }
+function pill(icon,label,desc){ return `<div class="grid-pill"><span class="grid-pill-icon">${icon}</span><div><div class="grid-pill-label">${label}</div><div class="grid-pill-desc">${desc}</div></div></div>` }
+
+function copyCode(btn){
+  const text = btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent="✓"; btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok")},2000);
+  });
+}
+
+function toggleCard(id){
+  const body = document.getElementById(id);
+  const arr  = document.getElementById("arr-"+id);
+  const open = body.classList.toggle("open");
+  arr.textContent = open ? "▲" : "▼";
+}
+
+// ── Section renderers ──────────────────────────────────────────────────────────
+
+const CONTENT = {
+
+setup: ()=> `
+${p("Claude Code is a terminal AI agent. Install once, use in every project — or embed in your own app via the Agent SDK.")}
+${h2("Installation")}
+${code(`# Native binary (recommended)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# macOS Homebrew
+brew install --cask claude-code
+
+# npm (legacy)
+npm install -g @anthropic-ai/claude-code
+
+claude --version
+claude   # opens browser to authenticate on first run`)}
+${h2("Key startup flags")}
+${code(`claude                         # interactive session
+claude 'fix bug in auth.ts'    # start with a prompt
+claude -c                      # continue last session
+claude -r 'session-name'       # resume named session
+claude -p 'prompt'             # headless (non-interactive)
+claude --model opus            # start with Opus
+claude --permission-mode plan  # plan-only — no file writes
+claude --permission-mode auto  # AI-classified auto-approve
+claude --mcp-debug             # debug MCP connections
+claude --safe-mode             # disable all customizations
+claude -w feature-auth         # open in a git worktree
+claude --bg -p 'long task'     # run in background`)}
+${h2("First session checklist")}
+${code(`cd your-project && claude
+
+/init          # generate starter CLAUDE.md
+/mcp           # set up external connections
+/permissions   # configure approval rules
+/memory        # review memory files
+
+> "Explore the project and tell me what it does"`)}
+`,
+
+claudemd: ()=> `
+${p("CLAUDE.md sits in your project root. Claude reads it at the start of every session — persistent memory about your stack, rules, and conventions. The single most impactful thing you can add to any project.")}
+${box("info","<b>ℹ️</b> Without CLAUDE.md Claude starts each session knowing nothing. With it Claude already knows your stack, rules, and architecture before your first prompt.")}
+${card("✨","Auto-generate with /init","Claude scans your project and writes CLAUDE.md automatically","#0f766e",
+  code(`claude
+/init     # Claude explores files, writes CLAUDE.md
+/memory   # review and refine it`)
+)}
+${card("📋","Complete CLAUDE.md template","Copy → customize → commit to git","#0f766e",
+  code(`# Project: E-commerce API
+
+## What this is
+Node.js + Express + PostgreSQL REST API for an online store.
+
+## Tech stack
+- Runtime: Node.js 20 + TypeScript
+- Framework: Express 4
+- Database: PostgreSQL 15 (DATABASE_URL in .env)
+- Tests: Vitest + Supertest
+
+## How to run
+npm install && npm run dev   # dev server :3000
+npm test                     # run all tests
+
+## Structure
+src/routes/     -> HTTP handlers (validate -> service -> respond)
+src/services/   -> Business logic (no direct DB calls)
+src/models/     -> All SQL queries (parameterized only)
+tests/          -> mirrors src/
+
+## Rules — always follow
+- Every new endpoint needs a test in tests/routes/
+- camelCase for JS vars, PascalCase for TS types
+- Named exports only — no default exports
+- All SQL in src/models/ — never inline SQL
+- Response format: { data: ..., meta: { ... } }
+- Never commit .env or API keys
+
+## What NOT to do
+- No ORM — raw SQL only
+- No SELECT * in production
+- Never push directly to main`)
+)}
+${card("🧪","Verify Claude reads your rules","Canary test — confirm rules are actually enforced","#0f766e",
+  code(`# Add a canary rule to CLAUDE.md:
+## Rules
+- Add '# CLAUDE_OK' as first line of every new file.
+
+# Ask Claude to create a file:
+> "Create src/utils/date.ts with a formatDate() function"
+# File should start with # CLAUDE_OK -> rules are working
+
+# Test enforcement:
+> "Use var for the loop counter"
+# Claude should refuse or rewrite with let/const`)
+)}
+${card("🗂️","Nested CLAUDE.md for monorepos","Different rules per package — all load simultaneously","#0f766e",
+  code(`# Root CLAUDE.md           -> project-wide rules
+# packages/frontend/CLAUDE.md -> React-specific rules
+# packages/api/CLAUDE.md      -> Node-specific rules
+
+# All relevant files load simultaneously.
+# More specific (deeper) files win on conflicts.
+
+# The @filename path is RELATIVE to the CLAUDE.md file location.
+# If packages/api/CLAUDE.md contains @docs/schema.md
+# it resolves to packages/api/docs/schema.md`)
+)}
+${card("📎","Reference files with @filename","Keep CLAUDE.md short — link out to detail docs","#0f766e",
+  code(`# In CLAUDE.md:
+@docs/api-conventions.md
+@docs/database-schema.md
+
+# Path is relative to where CLAUDE.md lives — not the project root.
+# Any path works: @conventions.md  @src/SCHEMA.md
+# Claude loads these on demand when relevant.
+# Keep CLAUDE.md under 200 lines (recommended max).`)
+)}
+`,
+
+commands: ()=> `
+${p("Type / in any session to see all commands with live filtering. Three input prefixes: <code>/command</code> for commands · <code>! shell command</code> to run inline · <code>#note</code> to add memory.")}
+${code(`# Session & memory
+  /init              Scan project, generate CLAUDE.md
+  /memory            Edit memory files
+  /compact           Summarize context to free space
+  /compact [hint]    e.g. /compact focus on auth module
+  /clear             Wipe conversation, start fresh
+  /context           Show context window usage %
+  /rewind            Roll back code + conversation
+  /export            Export conversation to markdown
+
+# Planning & review
+  /plan              Toggle plan-only mode (no edits until approved)
+  /ultraplan         Deeper planning — slower, more thorough
+  /diff              Show all file changes this session
+  /code-review       Review diff for bugs + cleanups
+  /code-review --fix Same, auto-applies findings
+  /security-review   Scan diff for vulnerabilities
+
+# Navigation
+  /resume            Resume a previous session
+  /branch            Fork session for safe experimentation
+  /rename            Name the current session
+  /background        Detach session to background
+
+# Agents & tasks
+  /tasks             List background subagent tasks
+  /agents            View background agent sessions
+  /goal <desc>       Set a goal Claude works toward
+  /btw <question>    Side question — no context pollution
+  /batch <instr>     Apply change across many files
+
+# Models & cost
+  /model opus        Switch to Opus (most capable)
+  /model sonnet      Switch to Sonnet (best balance)
+  /model haiku       Switch to Haiku (fastest, cheapest)
+  /effort xhigh      Max reasoning — Opus only
+  /cost              Show token usage and cost
+
+# Keyboard shortcuts
+  Shift+Tab x2       Toggle plan mode on/off
+  Ctrl+C             Cancel current task
+  Ctrl+B             Background current task
+  ! command          Run shell inline: ! npm test
+  # note             Add persistent memory note`)}
+`,
+
+tools: ()=> `
+${p("Claude has 8 built-in tools. You never specify which tool to use — Claude picks automatically. Understanding each one helps you write better prompts and know what to expect.")}
+${code(`Tool       What it acts on         The question it answers
+────────────────────────────────────────────────────────────
+Bash       Your OS shell           Anything you can type in terminal
+Read       A specific file         What is inside this file?
+Write      Creates a new file      How do I make this file from scratch?
+Edit       An existing file        How do I change part of this file?
+Glob/LS    FILE NAMES & paths      Which files exist matching this pattern?
+Grep       FILE CONTENTS           Which files contain this text or pattern?
+WebSearch  The internet            What is the current info on this?
+Task       Spawns a subagent       How do I delegate without flooding context?`)}
+
+${card("💻","Bash — run any shell command","Anything you type in terminal, Claude can run. Use ! for inline commands.","#059669",
+  code(`# Claude runs these automatically:
+> "Run the test suite and explain every failure"
+> "Check if port 3000 is in use"
+> "Run npm audit and fix fixable vulnerabilities"
+
+# YOU run commands inline with ! — output enters conversation:
+! git log --oneline -10    # Claude now knows git history
+! npm test
+! curl http://localhost:3000/health`)
+)}
+${card("📖","Read — load a file into context","Use @filename shorthand. Claude remembers the file for the whole session.","#059669",
+  code(`# Reference with @ (most common):
+> "Review @src/auth.ts and find the bug"
+
+# Read multiple and compare:
+> "Read @src/services/userService.ts and
+   @src/services/adminService.ts.
+   What logic is duplicated between them?"
+
+# Read then fix:
+> "Read @src/models/userModel.ts.
+   Fix any SQL that is not parameterized."`)
+)}
+${card("✍️","Write — create a brand new file","Creates a file that does not exist yet. For existing files use Edit.","#059669",
+  code(`> "Create src/utils/date.ts with:
+   - formatDate(date: Date): string  -> YYYY-MM-DD
+   - isToday(date: Date): boolean
+   Named exports. JSDoc on every function."
+
+> "Create a .prettierrc:
+   single quotes, 2 space indent, 100 char width"
+
+# Write vs Edit:
+  Write  -> file does not exist -> CREATE
+  Edit   -> file exists, change part -> MODIFY`)
+)}
+${card("✂️","Edit — change part of an existing file","Surgical — only the target changes. Everything else stays intact.","#059669",
+  code(`> "In src/config.ts change the timeout from 5000 to 10000.
+   Only that one value — nothing else."
+
+> "In src/auth.ts the refreshToken() function does not
+   handle expired tokens. Fix just that function."
+
+> "In src/routes/users.ts add a DELETE /users/:id route
+   after the PUT route. Return 204 on success."`)
+)}
+${card("📂","Glob/LS — find files by NAME or PATH","Searches file names and paths — NOT what is inside them.","#059669",
+  code(`# Common patterns:
+  **/*.ts          -> all TypeScript files anywhere
+  **/*.test.ts     -> all test files anywhere
+  src/routes/*.ts  -> TS files directly in src/routes/
+
+# Examples:
+> "List all test files. How many and where?"
+> "Find all source files in src/services/ that don't
+   have a matching test file in tests/services/"
+> "Find every .env file in the project. Check if any
+   are tracked by git."
+
+# KEY: Glob finds FILES — not what is inside them.
+# To find content inside files -> use Grep`)
+)}
+${card("🔍","Grep — search inside files","Searches FILE CONTENTS — finds text or patterns inside files.","#059669",
+  code(`# Examples:
+> "Find every place that calls sendEmail().
+   List file name and line number for each."
+  # Grep searches for: sendEmail(
+
+> "Search for TODO and FIXME comments.
+   Group by urgency and prioritize."
+  # Grep searches for: TODO|FIXME
+
+# Glob vs Grep — the key distinction:
+  "Find files named auth.ts"         -> Glob  (file NAME)
+  "Find files that USE authToken"     -> Grep  (file CONTENT)
+
+# Claude combines them automatically:
+  "Find all files importing lodash"
+  -> Glob (find .ts/.js files) + Grep (search inside)`)
+)}
+${card("🌐","WebSearch — search the internet","Current docs, CVEs, changelogs, error solutions. Must be enabled in settings.","#059669",
+  code(`> "Search for React 19 breaking changes.
+   Then scan src/components/ and flag what will break."
+
+> "Search for known CVEs in express 4.18.
+   Check if my code is affected."
+
+> "I am getting: [paste error]
+   Search for this error, find common causes,
+   then check if my code has any of those causes."`)
+)}
+${card("🤝","Task — spawn a subagent","Delegates to a separate Claude. Only the summary returns to your context.","#059669",
+  code(`# Without Task — floods your context:
+> "Search all 300 files for deprecated API usage"
+
+# With Task — only summary returns:
+> "Use a subagent to search all files for deprecated
+   API usage. Return only a list of file:line findings."
+
+# Parallel subagents:
+> "Run three subagents simultaneously:
+   Agent 1: security vulnerabilities
+   Agent 2: performance bottlenecks
+   Agent 3: code quality issues
+   Combine findings into one report."`)
+)}
+${card("🗺️","Quick reference — which tool for which job","One-page lookup + how Claude combines tools automatically","#059669",
+  code(`TASK                                   TOOL
+────────────────────────────────────────────────────────
+Run npm test / git commit / curl       -> Bash
+Read and understand a specific file    -> Read (@filename)
+Create a brand new file                -> Write
+Change part of an existing file        -> Edit
+Find files by name or extension        -> Glob/LS
+Find text or pattern INSIDE files      -> Grep
+Look up current docs or CVEs           -> WebSearch
+Delegate without flooding context      -> Task (subagent)
+
+# Claude combines tools automatically:
+  "Fix the bug from the error log"
+  -> Bash (run app) + Grep (find code)
+  -> Edit (fix) + Bash (run tests to verify)`)
+)}
+`,
+
+planmode: ()=> `
+${p("Plan Mode makes Claude read-only — it can explore, analyse, and plan but cannot modify any files. There are two ways to enter it and they are <strong>NOT interchangeable</strong>.")}
+${card("⚠️","The difference — understand this first","Startup flag vs toggle — different tools for different situations","#b45309",
+  `${code(`# claude --permission-mode plan   (STARTUP FLAG)
+#
+# - Set when you LAUNCH Claude
+# - The ENTIRE session is plan-only from message one
+# - Claude cannot write or edit files — no exceptions
+# - Use when: you know upfront you only want to explore
+
+
+# /plan  or  Shift+Tab             (TOGGLE IN SESSION)
+#
+# - Used INSIDE an already running session
+# - Switches plan mode ON or OFF
+# - You can go back and forth as needed
+# - Use when: you want to mix work and planning`)}
+  <div class="plan-grid">
+    <div class="plan-box plan-box-blue">
+      <div class="plan-box-label" style="color:#0369a1">--permission-mode plan</div>
+      <div class="plan-box-desc">Whole session is plan-only. No toggle. Use when starting a session specifically to explore.</div>
+    </div>
+    <div class="plan-box plan-box-green">
+      <div class="plan-box-label" style="color:#16a34a">/plan or Shift+Tab</div>
+      <div class="plan-box-desc">Toggles on/off mid-session. Mix work and planning. Switch back when ready to execute.</div>
+    </div>
+  </div>`
+)}
+${card("🔒","Startup flag — whole session read-only","claude --permission-mode plan — for exploration-only sessions","#b45309",
+  code(`claude --permission-mode plan
+
+> "Explore this codebase. Give me:
+   1. ASCII architecture diagram
+   2. Data flows (request -> response)
+   3. Tech debt with severity ratings
+   4. Dependency map (what depends on what)
+   5. Safe order to make changes"
+
+# Claude reads and analyses freely.
+# If you ask it to edit a file it will refuse.
+# The plan constraint holds for the whole session.`)
+)}
+${card("🔄","Toggle mid-session — mix work and planning","/plan or Shift+Tab — switch in and out as needed","#b45309",
+  code(`claude
+# Session starts normally — Claude CAN read and write
+
+> "Fix the null pointer bug in src/auth.ts"
+# Claude fixes it (writes to file)
+
+/plan
+# NOW in plan mode — Claude cannot touch files
+
+> "What else needs to change for JWT migration?
+   List every file and flag compatibility risks."
+# Claude analyses — cannot edit anything
+
+Shift+Tab
+# Back to normal mode
+
+> "Good plan. Execute phase 1 only."`)
+)}
+${card("🛡️","Security audit — use the startup flag","Whole session stays safe — no accidental changes possible","#b45309",
+  code(`claude --permission-mode plan
+
+> "Conduct a security audit. Check for:
+   - SQL injection (missing parameterized queries)
+   - Missing auth on endpoints
+   - Secrets or API keys in source code
+   - CORS misconfigurations
+   - Missing rate limiting
+   Report CRITICAL / HIGH / MEDIUM / LOW
+   with exact file + line for each finding."`)
+)}
+${box("tip","<b>💡 Simple rule:</b> Starting a session specifically to explore? Use the startup flag. Already working and want to pause and think? Use /plan to toggle.")}
+`,
+
+agents: ()=> `
+${p("Almost everything in Claude Code is just a markdown file Claude reads and follows. Agents are markdown files. Skills are markdown files. CLAUDE.md is a markdown file. Understanding this makes the whole system click.")}
+${h2("What everything actually is")}
+${code(`.claude/
+  agents/
+    code-reviewer.md   <- specialist agent   (MARKDOWN)
+    db-analyst.md      <- specialist agent   (MARKDOWN)
+  skills/
+    deploy.md          <- reusable workflow  (MARKDOWN)
+    pr-summary.md      <- reusable workflow  (MARKDOWN)
+  hooks/
+    guard-bash.sh      <- lifecycle scripts  (SHELL — exception)
+  settings.json        <- permissions config (JSON  — exception)
+CLAUDE.md              <- project memory     (MARKDOWN)
+
+# Hooks and settings.json are the only non-markdown pieces.`)}
+${h2("Anatomy of an agent file — two parts")}
+${code(`---
+name: code-reviewer          # how Claude identifies this agent
+description: Reviews code    # Claude reads this to decide WHEN
+             for bugs and    # to auto-invoke — be specific here
+             security issues
+tools: Read, Grep, Glob      # tools this agent is ALLOWED to use
+model: sonnet                # which Claude model runs it
+memory: project              # remembers things across sessions
+---
+
+You are a senior code reviewer.
+When reviewing code always check:
+1. Security vulnerabilities first
+2. Logic bugs and edge cases
+3. Test coverage
+
+Output format:
+[CRITICAL] file:line — description
+[HIGH]     file:line — description
+
+# The YAML between --- is CONFIG (name, tools, model, memory).
+# The markdown body is the SYSTEM PROMPT Claude follows.`)}
+${h2("Every frontmatter field explained")}
+${code(`name: code-reviewer
+# Identifier. Used for explicit invocation:
+# > "Use the code-reviewer agent to review src/auth.ts"
+
+description: Reviews code for bugs, security, and conventions.
+             Auto-invoke after non-trivial code changes.
+# MOST IMPORTANT for auto-routing.
+# Claude reads ALL descriptions at session start.
+# When a task matches, Claude routes to that agent automatically.
+# Include WHEN to use it in the description.
+
+tools: Read, Grep, Glob
+# Which built-in tools this agent can use.
+# A reviewer with Read/Grep/Glob only CANNOT edit your files.
+# Available: Read, Write, Edit, Bash, Glob, Grep, WebSearch, Task
+
+model: sonnet
+# Which Claude model runs this agent.
+# opus   -> most capable, expensive (hard reasoning tasks)
+# sonnet -> best balance (most tasks)
+# haiku  -> fastest, cheapest (simple subtasks, save cost)
+
+memory: project
+# Whether agent remembers across sessions.
+# project -> remembers within this project
+# user    -> remembers across all your projects
+# (omit)  -> fresh start every session`)}
+${h2("How auto-invocation works")}
+${code(`# At session start Claude reads ALL agent descriptions.
+# It routes tasks automatically by matching context.
+
+# You have these agents:
+#   code-reviewer.md  "Reviews code for bugs and security..."
+#   db-analyst.md     "Analyses PostgreSQL schemas and queries..."
+#   test-writer.md    "Writes tests for new code..."
+
+> "Review the changes I made to src/payments.ts"
+# Claude sees: 'review' + 'changes' + '.ts file'
+# -> routes to code-reviewer automatically
+
+> "Our queries are slow — check the database"
+# Claude sees: 'queries' + 'slow' + 'database'
+# -> routes to db-analyst automatically
+
+# You can also be explicit:
+> "Use the code-reviewer agent to review src/auth.ts"
+
+# Do you need to define agents upfront?
+# No — Claude can do code review without any agent defined.
+# Defining an agent gives you: consistent format, right tools,
+# right model, accumulated memory across sessions.`)}
+${h2("Where Claude looks for agents — priority order")}
+${code(`1. Managed settings  (enterprise policy — highest priority)
+2. --agents CLI flag (session-only override)
+3. .claude/agents/   <- PROJECT agents (commit to git)
+4. ~/.claude/agents/ <- PERSONAL agents (all projects)
+5. Plugins           (installed plugin agents)`)}
+${h2("settings.json — permissions and hooks config")}
+${card("🔐","Permissions — allow and deny lists","Control which tool calls need your approval","#7c3aed",
+  code(`{
+  "permissions": {
+    "allow": [
+      "Read", "Glob", "Grep",
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Write(src/*)",
+      "Edit(src/*)"
+    ],
+    "deny": [
+      "Bash(rm *)",
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Write(.env*)"
+    ]
+  }
+}
+# Anything not listed -> Claude asks you each time.
+# deny always wins over allow if both match.`)
+)}
+${card("🗂️","Three settings files — which scope to use","Personal defaults, project team rules, local overrides","#7c3aed",
+  code(`~/.claude/settings.json        # personal defaults
+.claude/settings.json          # project (commit to git)
+.claude/settings.local.json    # local overrides (gitignore this)
+
+# .claude/settings.json (committed):
+#   hooks, permissions, shared MCP servers — team-wide rules
+
+# .claude/settings.local.json (gitignored):
+#   your API tokens, local DB connection strings`)
+)}
+${card("📄","Complete settings.json example","A realistic team project config","#7c3aed",
+  code(`{
+  "permissions": {
+    "allow": ["Read","Glob","Grep","Bash(npm test)","Bash(git diff *)"],
+    "deny":  ["Bash(rm *)","Bash(git push *)","Write(.env*)"]
+  },
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{"type":"command","command":".claude/hooks/guard.sh"}]
+    }],
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{"type":"command","command":".claude/hooks/lint.sh"}]
+    }],
+    "Stop": [{
+      "hooks": [{"type":"command","command":".claude/hooks/test.sh"}]
+    }]
+  },
+  "model": "claude-sonnet-4-6",
+  "autoCompact": true
+}`)
+)}
+${box("tip","<b>💡 Tip:</b> Don't write settings.json upfront. Start working, notice which operations make you nervous (git push, rm, writing to .env), then add deny rules for those. Build gradually from real experience.")}
+`,
+
+skills: ()=> `
+${p("Skills are markdown files defining reusable workflows. They become slash commands or Claude auto-invokes them when the task matches the description.")}
+${box("info","<b>ℹ️ Skills vs CLAUDE.md:</b> CLAUDE.md always loads — persistent project memory. Skills load on demand — reusable workflows triggered when relevant.<br><b>Skills vs Hooks:</b> Skills are invoked when relevant (Claude decides). Hooks fire on every matching event — no choice, no skipping.")}
+${card("🚀","/deploy skill",".claude/skills/deploy/SKILL.md","#be185d",
+  code(`---
+name: deploy
+description: Deploy to staging safely with all quality checks
+---
+
+When /deploy is invoked:
+1. Check git status — STOP if uncommitted changes exist
+2. Run npm test — STOP if any test fails
+3. Run npm run lint — auto-fix errors
+4. Run npm run build — STOP if build fails
+5. Create git tag: v-YYYY-MM-DD-HH-MM
+6. Push current branch to staging remote
+7. Report: tag name, URL, 3-bullet change summary
+
+# Usage:
+claude
+/deploy`)
+)}
+${card("🔌","/new-endpoint skill","Scaffold a complete endpoint with one command","#be185d",
+  code(`---
+name: new-endpoint
+description: Scaffold a complete API endpoint following conventions.
+             Use when asked to create a new route or endpoint.
+---
+
+Arguments: $ARGUMENTS — format: METHOD /path description
+
+Create ALL of these files:
+1. src/routes/<resource>.ts          -> route handler
+2. src/services/<resource>Service.ts -> business logic
+3. src/models/<resource>Model.ts     -> SQL queries
+4. tests/routes/<resource>.test.ts   -> tests
+
+Follow ALL conventions from CLAUDE.md.
+
+# Usage:
+/new-endpoint POST /products/create Create a new product listing`)
+)}
+${card("🤖","Auto-invoked skill","Claude loads this automatically when the task matches the description","#be185d",
+  code(`---
+name: explain-code
+description: Explains code with diagrams and analogies.
+             Auto-invoke when asked how something works or
+             to explain code.
+---
+
+When explaining code always:
+1. Start with a real-world analogy
+2. Draw an ASCII diagram of the flow
+3. Walk through the code step by step
+4. Note any non-obvious gotchas
+5. End with "The key thing to remember is: ..."
+
+# Just ask naturally — Claude auto-loads the skill:
+> "How does the token refresh flow work in src/auth.ts?"`)
+)}
+`,
+
+hooks: ()=> `
+${p("Hooks fire automatically at lifecycle events — no Claude involvement, no judgement call. Unlike CLAUDE.md rules (Claude might forget) or skills (Claude decides), hooks enforce rules at the system level every single time.")}
+${box("info","<b>ℹ️ Key distinction:</b> CLAUDE.md says 'please follow these rules'. Hooks enforce rules regardless of what Claude thinks. Use hooks for things that must happen 100% of the time.")}
+${h2("Hook events")}
+${code(`PreToolUse        -> before ANY tool call (main security gate)
+PostToolUse       -> after a tool call completes
+PreCompact        -> before /compact runs
+Stop              -> when Claude finishes a turn
+SessionStart      -> when a session begins (SDK only)
+SessionEnd        -> when a session ends (SDK only)
+CwdChanged        -> working directory changes
+FileChanged       -> watched file modified externally
+TaskCompleted     -> background task finishes
+
+# Exit codes (CLI shell scripts):
+exit 0  -> allow the tool call
+exit 1  -> allow but surface a warning to Claude
+exit 2  -> DENY the tool call`)}
+${card("🛡️","Block dangerous commands (PreToolUse)",".claude/hooks/guard-bash.sh — fires before every Bash call","#dc2626",
+  code(`#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \\
+  "import sys,json; print(json.load(sys.stdin).get('command',''))")
+
+if echo "$CMD" | grep -qE 'rm -rf|DROP TABLE|truncate'; then
+  echo "BLOCKED: Dangerous command: $CMD" >&2
+  exit 2   # deny
+fi
+exit 0     # allow`)
+)}
+${card("✨","Auto-lint after every edit (PostToolUse)",".claude/hooks/auto-lint.sh — fires after Write or Edit","#dc2626",
+  code(`#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \\
+  "import sys,json; print(json.load(sys.stdin).get('path',''))")
+
+if echo "$FILE" | grep -qE '\\.(js|ts|jsx|tsx)$'; then
+  npx prettier --write "$FILE" 2>/dev/null
+  npx eslint --fix "$FILE" 2>/dev/null
+fi`)
+)}
+${card("🐍","Hooks can call any language","Shell script is the wrapper — inside call Python, Node, Go, anything","#dc2626",
+  code(`# .claude/hooks/guard-bash.sh
+#!/bin/bash
+cat | python3 .claude/hooks/guard.py
+
+# .claude/hooks/guard.py
+import sys, json
+data = json.load(sys.stdin)
+command = data.get('command', '')
+
+dangerous = ['rm -rf', 'DROP TABLE', '> /dev/']
+if any(d in command for d in dangerous):
+    print('BLOCKED: dangerous command', file=sys.stderr)
+    sys.exit(2)
+
+sys.exit(0)`)
+)}
+${card("🏗️","SDK hooks — native functions (no shell scripts)","In the Agent SDK hooks are callback functions in your own language","#dc2626",
+  code(`# Python SDK — hook is an async function
+async def guard_bash(hook_input, tool_use_id, context):
+    cmd = hook_input.tool_input.get('command', '')
+    if 'rm -rf' in cmd:
+        return {'behavior': 'deny', 'message': 'Blocked'}
+    return {'behavior': 'allow'}
+
+// TypeScript SDK — hook is an async function
+async function guardBash(hookInput, toolUseId, context) {
+  const cmd = hookInput.tool_input?.command ?? '';
+  if (cmd.includes('rm -rf')) {
+    return { behavior: 'deny', message: 'Blocked' };
+  }
+  return { behavior: 'allow' };
+}`)
+)}
+`,
+
+mcp: ()=> `
+${p("MCP (Model Context Protocol) connects Claude to external tools. Use pre-built community servers or build your own to expose any internal system to Claude.")}
+${h2("Pre-built community servers")}
+${code(`# GitHub
+export GITHUB_PERSONAL_ACCESS_TOKEN=ghp_your_token
+claude mcp add -s user github -- npx -y @modelcontextprotocol/server-github
+
+# PostgreSQL
+claude mcp add db -- npx -y @bytebase/dbhub --dsn 'postgresql://user:pass@localhost/mydb'
+
+# Playwright browser automation
+claude mcp add browser -- npx -y @playwright/mcp
+
+# Slack
+claude mcp add slack -- npx -y @modelcontextprotocol/server-slack --bot-token xoxb-...
+
+claude mcp list        # list servers
+claude --mcp-debug     # debug connections
+/mcp                   # check status in session
+
+# Scopes:
+#  --scope local    personal, not committed (default)
+#  --scope project  saved in .mcp.json, shared via git
+#  --scope user     available across ALL your projects`)}
+${card("🐙","GitHub PR Review","Claude reviews real PRs and posts structured comments","#d97706",
+  code(`claude
+> "List my open PRs. Take the most recent one and:
+   1. Read the full diff
+   2. Check against our CLAUDE.md conventions
+   3. Look for bugs, edge cases, missing tests
+   4. Post a review comment grouped by severity"`)
+)}
+${card("🗄️","Database Doctor","Explore and optimise a real database","#d97706",
+  code(`claude
+> "Connect to the database and:
+   1. List all tables with row counts
+   2. Find tables missing indexes on foreign keys
+   3. Write migrations/add_missing_indexes.sql"`)
+)}
+${h2("Building your own MCP server")}
+${p("Pre-built servers cover generic services. Your company has internal systems — CRM, deployment tools, proprietary APIs — that no pre-built server knows about. Build your own to expose them to Claude.")}
+${card("🤔","Why build your own?","When pre-built servers are not enough","#d97706",
+  code(`# Examples of what you would build custom MCP for:
+#  - Your internal CRM or ticketing system
+#  - Your company's deployment pipeline
+#  - Your proprietary database with custom schemas
+#  - Your internal REST APIs
+#  - Your data analytics system
+
+# Once exposed via MCP, Claude can:
+> "Get the open support tickets for customer Acme Corp"
+> "Deploy version 2.4.1 to staging"
+> "Query analytics DB for last week's revenue by region"
+
+# Claude treats your custom tools exactly like GitHub or Postgres.`)
+)}
+${card("🐍","Python MCP server — FastMCP","Expose internal APIs as Claude tools in about 30 lines","#d97706",
+  code(`pip install fastmcp
+
+# my_company_mcp.py
+from fastmcp import FastMCP
+import requests, os
+
+mcp = FastMCP('My Company Tools')
+CRM_TOKEN = os.environ['CRM_TOKEN']
+
+@mcp.tool()
+def get_customer(customer_id: str) -> dict:
+    """Get customer details from our CRM by ID"""
+    r = requests.get('https://crm.internal/api/customers/' + customer_id,
+                     headers={'Authorization': 'Bearer ' + CRM_TOKEN})
+    return r.json()
+
+@mcp.tool()
+def list_open_tickets(status: str = 'open') -> list:
+    """List support tickets — status: open, closed, or pending"""
+    r = requests.get('https://tickets.internal/api/tickets?status=' + status)
+    return r.json()
+
+@mcp.tool()
+def deploy_to_staging(service: str, version: str) -> str:
+    """Deploy a microservice to the staging environment"""
+    r = requests.post('https://deploy.internal/api/deploy',
+                      json={'service': service, 'version': version})
+    return r.json().get('message', 'Deployed')
+
+@mcp.tool()
+def query_analytics(sql: str) -> list:
+    """Run a read-only query on the analytics database"""
+    if not sql.strip().upper().startswith('SELECT'):
+        raise ValueError('Only SELECT queries are allowed')
+    return analytics_db.execute(sql)
+
+if __name__ == '__main__':
+    mcp.run()`)
+)}
+${card("🔗","Connect and use your custom server","One command to connect — Claude uses your tools from plain English","#d97706",
+  `${code(`# Connect to Claude Code:
+claude mcp add mycompany -- python3 my_company_mcp.py
+
+# Now Claude uses your tools naturally:
+claude
+> "Get the details for customer ID 12345"
+  # Claude calls get_customer automatically
+
+> "List all open support tickets and group by priority"
+  # Claude calls list_open_tickets
+
+> "Deploy version 2.4.1 of the auth service to staging"
+  # Claude calls deploy_to_staging
+
+# MCP tool naming: mcp__<server-name>__<tool-name>`)}
+  ${box("tip","<b>💡 Tip:</b> Claude automatically picks the right tool based on your description. You never need to say which tool to call — just describe what you want.")}`
+)}
+${card("💡","Tips for good MCP tools","What makes tools Claude can use reliably","#d97706",
+  code(`# 1. Write clear descriptions — Claude uses them to pick tools
+@mcp.tool()
+def get_customer(customer_id: str) -> dict:
+    # BAD:  "Get customer"
+    # GOOD: "Get full customer profile including contact info,
+    #        subscription plan and billing status by customer ID"
+
+# 2. Return structured data (dicts/lists) not raw strings
+
+# 3. Add safety checks inside your tools
+def query_analytics(sql: str) -> list:
+    if not sql.strip().upper().startswith('SELECT'):
+        raise ValueError('Only SELECT queries allowed')
+
+# 4. One tool = one job — Claude combines them automatically
+# BAD:  get_customer_and_tickets_and_invoices()
+# GOOD: get_customer() + list_tickets() + list_invoices()
+
+# 5. Use environment variables for credentials
+import os
+CRM_TOKEN = os.environ['CRM_TOKEN']  # never hardcode`)
+)}
+`,
+
+multi: ()=> `
+${p("Multi-agent means Claude coordinates multiple agents in parallel or in sequence. Three distinct patterns — each for a different situation.")}
+${code(`Pattern              What it is                     When to use
+─────────────────────────────────────────────────────────────────
+Orchestrator model   One coordinator, workers        Parallel independent tasks
+                     report results back up
+Sequential pipeline  Output of A becomes input of B  Staged workflows:
+                     becomes input of C              research -> write -> review
+Agent teams          Agents message each other,      Collaborative work,
+(peer-to-peer)       shared task list, debate        long-running projects`)}
+${card("➡️","Pattern 1 — Orchestrator with subagents","One coordinator delegates to workers — results flow back up","#9333ea",
+  code(`claude
+> "Add user authentication. Use specialized subagents:
+   - DB agent:       schema and migrations
+   - Backend agent:  JWT auth endpoints
+   - Frontend agent: React login/signup forms
+   - Test agent:     tests for all of the above
+
+   Run DB agent first.
+   Then backend + frontend in parallel.
+   Run test agent last.
+   Combine into working code."
+
+# Subagents work in isolation — only summaries come back.
+# Subagents are read-only by default — parent applies changes.`)
+)}
+${card("🔗","Pattern 2 — Sequential pipeline","Each agent builds on the previous stage's output","#9333ea",
+  code(`claude
+> "Build a payments API spec using a 3-stage pipeline:
+
+   Stage 1 - RESEARCHER:
+     Study Stripe and PayPal API designs.
+     Produce: research-notes.md
+
+   Stage 2 - WRITER (after Stage 1):
+     Read research-notes.md.
+     Write a detailed technical spec.
+     Produce: payments-api-spec.md
+
+   Stage 3 - REVIEWER (after Stage 2):
+     Read the spec. Find security gaps and ambiguities.
+     Produce: spec-review.md
+
+   Incorporate review feedback into the final spec."`)
+)}
+${card("🤝","Pattern 3 — Agent teams (peer-to-peer)","Agents communicate with each other directly — shared task list","#9333ea",
+  code(`# Agent Teams is an experimental feature in Claude Code.
+# Unlike orchestrator pattern, agents can:
+#  - Send messages to each other directly
+#  - Share a task list (not just report up to coordinator)
+#  - Debate approaches before acting
+
+claude
+> "Set up an agent team to build the e-commerce API:
+
+   Team Lead:   breaks features into tasks, assigns to specialists
+   Backend Dev: implements API endpoints, reports to team lead
+   Reviewer:    reviews each PR, can send back for fixes
+   Test Writer: writes tests, communicates with Backend Dev
+
+   Let the team coordinate and report back when complete."`)
+)}
+${card("🌿","Parallel git worktrees — no file conflicts","Each agent gets its own branch — work simultaneously","#9333ea",
+  code(`git worktree add ../feat-auth feature/auth
+git worktree add ../feat-payments feature/payments
+
+# Terminal 1:
+cd ../feat-auth && claude
+> "Implement JWT auth: register, login, refresh, logout"
+
+# Terminal 2 (simultaneously):
+cd ../feat-payments && claude
+> "Integrate Stripe: checkout, webhooks, subscriptions"
+
+# Merge when both done:
+cd original-project
+git merge feature/auth feature/payments`)
+)}
+${card("🤖","Auto mode — hands-off execution","AI classifier approves safe actions, blocks risky ones","#9333ea",
+  code(`claude --permission-mode auto
+
+# Safe (read files, write code, run tests) -> auto-approved
+# Risky (mass delete, data exfiltration)   -> blocked
+
+> "Implement all 12 GitHub issues tagged 'good-first-issue'.
+   Commit each and open a draft PR. Keep going until all done."
+# Claude runs autonomously within safety bounds`)
+)}
+`,
+
+headless: ()=> `
+${p("Headless mode runs Claude non-interactively with the -p flag. Foundation for CI/CD, automation scripts, and scheduled jobs.")}
+${card("💻","Basic headless usage","The -p flag — runs a task and exits","#475569",
+  code(`# Run a task, print to stdout:
+claude -p 'Read src/auth.ts and list every function'
+
+# Pipe output to a file:
+claude -p 'Generate API docs for src/routes/' > docs/api.md
+
+# Use output in a shell script:
+RESULT=$(claude -p 'Check for TypeScript errors in src/')
+echo "Result: $RESULT"
+
+# With a specific model:
+claude --model opus -p 'Architect a caching solution for issue #45'`)
+)}
+${card("🐙","GitHub Actions — AI code review on every PR","Post an AI review comment automatically","#475569",
+  code(`# .github/workflows/ai-review.yml
+name: AI Code Review
+on: [pull_request]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: npm install -g @anthropic-ai/claude-code
+      - env:
+          ANTHROPIC_API_KEY: YOUR_SECRET_HERE
+        run: |
+          git diff origin/main...HEAD > /tmp/pr.diff
+          claude -p "Review this diff for bugs and security.
+          Output markdown grouped by severity. File + line.
+          $(cat /tmp/pr.diff)" > review.md
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const body = require('fs').readFileSync('review.md','utf8')
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner, repo: context.repo.repo,
+              body: '## AI Review' + body
+            })`)
+)}
+${card("🚀","Background agents","Long tasks run in background — check progress later","#475569",
+  code(`# Fire and forget:
+claude --bg -p 'Refactor entire src/ to new error handling.
+Work file by file. Run tests after each. Commit each.'
+
+# Check progress:
+claude agents     # view all background sessions
+
+# Background agents can:
+# - Commit code autonomously
+# - Push branches
+# - Open draft PRs when worktree work completes`)
+)}
+`,
+
+sdk: ()=> `
+${p("The Agent SDK lets you embed Claude's agent loop inside your own Python or TypeScript application. One function — query() — gives you a fully autonomous agent.")}
+${box("info","<b>ℹ️ Messages API vs Agent SDK:</b> The Messages API is one request/response — you manage tool loops yourself. The Agent SDK runs the entire loop — Claude iterates autonomously until the task is done.")}
+${h2("Installation")}
+${code(`pip install claude-agent-sdk            # Python 3.10+
+npm install @anthropic-ai/claude-agent-sdk  # Node.js 18+
+export ANTHROPIC_API_KEY=sk-ant-...`)}
+${card("🐍","Minimal agent — Python","10 lines to a working autonomous agent","#c026d3",
+  code(`import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+
+async def main():
+    async for msg in query(
+        prompt='Read all Python files in src/ and list every function',
+        options=ClaudeAgentOptions(
+            allowed_tools=['Read', 'Glob', 'Bash'],
+        )
+    ):
+        if isinstance(msg, ResultMessage):
+            print(msg.result)
+
+asyncio.run(main())`)
+)}
+${card("📘","Minimal agent — TypeScript","Stream messages as Claude works","#c026d3",
+  code(`import { query, ClaudeAgentOptions } from '@anthropic-ai/claude-agent-sdk';
+
+async function main() {
+  for await (const msg of query({
+    prompt: 'Fix all TypeScript errors in src/',
+    options: {
+      allowedTools: ['Read', 'Glob', 'Bash', 'Write'],
+      permissionMode: 'acceptEdits',
+    }
+  })) {
+    if (msg.type === 'assistant') {
+      const text = msg.message.content
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      process.stdout.write(text);
+    }
+    if (msg.type === 'result') {
+      console.log('Done.');
+    }
+  }
+}
+main();`)
+)}
+${card("🔄","Session resume — multi-turn agents","Agents that remember context across multiple calls","#c026d3",
+  code(`import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, SystemMessage, ResultMessage
+
+async def main():
+    session_id = None
+
+    # Turn 1
+    async for msg in query(
+        prompt='Read src/auth.ts and understand token refresh',
+        options=ClaudeAgentOptions(allowed_tools=['Read', 'Glob'])
+    ):
+        if isinstance(msg, SystemMessage) and msg.subtype == 'init':
+            session_id = msg.data['session_id']
+
+    # Turn 2 — resumes with full context from Turn 1
+    async for msg in query(
+        prompt='Now find every place that calls refreshToken()',
+        options=ClaudeAgentOptions(
+            resume=session_id,
+            allowed_tools=['Read', 'Glob', 'Grep']
+        )
+    ):
+        if isinstance(msg, ResultMessage):
+            print(msg.result)
+
+asyncio.run(main())`)
+)}
+${card("🪝","SDK hooks — audit logging and blocking","Callback functions at lifecycle events — in your own code","#c026d3",
+  code(`import asyncio, json, datetime
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+async def audit_writes(hook_input, tool_use_id, context):
+    if hook_input.tool_name in ('Write', 'Edit'):
+        with open('audit.log', 'a') as f:
+            f.write(json.dumps({
+                'tool': hook_input.tool_name,
+                'file': hook_input.tool_input.get('path'),
+                'time': datetime.datetime.utcnow().isoformat()
+            }) + '\\n')
+    return {'behavior': 'allow'}
+
+async def guard_bash(hook_input, tool_use_id, context):
+    if hook_input.tool_name == 'Bash':
+        cmd = hook_input.tool_input.get('command', '')
+        if 'rm -rf' in cmd:
+            return {'behavior': 'deny', 'message': 'Blocked'}
+    return {'behavior': 'allow'}
+
+async def main():
+    async for msg in query(
+        prompt='Refactor src/users.ts',
+        options=ClaudeAgentOptions(
+            allowed_tools=['Read', 'Write', 'Edit', 'Bash'],
+            hooks={'PreToolUse': [audit_writes, guard_bash]}
+        )
+    ):
+        pass
+
+asyncio.run(main())`)
+)}
+`,
+
+backend: ()=> `
+${p("Practical patterns for embedding Claude agents in real backend applications.")}
+${card("⚡","Express.js SSE streaming endpoint","Stream agent output to the browser in real time","#16a34a",
+  code(`// server.js
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// Uses claude-agent-sdk — install separately
+app.post('/api/agent/run', async (req, res) => {
+  const { query, ClaudeAgentOptions } = await import('@anthropic-ai/claude-agent-sdk');
+  const { prompt } = req.body;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    for await (const msg of query({
+      prompt,
+      options: new ClaudeAgentOptions({
+        allowedTools: ['Read', 'Glob'],
+        permissionMode: 'plan',
+      }),
+    })) {
+      if (msg.type === 'assistant') {
+        const text = msg.message.content
+          .filter(b => b.type === 'text').map(b => b.text).join('');
+        if (text) res.write('data: ' + JSON.stringify({ text }) + '\\n\\n');
+      }
+      if (msg.type === 'result') {
+        res.write('data: ' + JSON.stringify({ done: true }) + '\\n\\n');
+      }
+    }
+  } finally { res.end(); }
+});`)
+)}
+${card("🐍","FastAPI async streaming","Python FastAPI — stream as Server-Sent Events","#16a34a",
+  code(`from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
+import json
+
+app = FastAPI()
+
+class AgentRequest(BaseModel):
+    prompt: str
+    tools: list[str] = ['Read', 'Glob']
+
+@app.post('/api/agent/run')
+async def run_agent(req: AgentRequest):
+    async def stream():
+        async for msg in query(prompt=req.prompt,
+            options=ClaudeAgentOptions(allowed_tools=req.tools)):
+            if isinstance(msg, AssistantMessage):
+                for b in msg.message.content:
+                    if b.type == 'text' and b.text:
+                        yield 'data: ' + json.dumps({'text': b.text}) + '\\n\\n'
+            elif isinstance(msg, ResultMessage):
+                yield 'data: ' + json.dumps({'done': True}) + '\\n\\n'
+
+    return StreamingResponse(stream(), media_type='text/event-stream',
+        headers={'Cache-Control': 'no-cache'})`)
+)}
+${card("📋","Job queue pattern","Submit a job ID, poll for results — handles hours-long tasks","#16a34a",
+  code(`// Uses a queue like BullMQ, Redis, or any job system
+// Pattern: submit -> get jobId -> poll GET /api/jobs/:jobId
+
+async function processAgentJob(jobId, prompt, userId) {
+  const { query, ClaudeAgentOptions } = await import('@anthropic-ai/claude-agent-sdk');
+  await db.jobs.update(jobId, { status: 'running' });
+
+  let result = '';
+  for await (const msg of query({ prompt,
+    options: new ClaudeAgentOptions({ allowedTools: ['Read','Write','Bash'] })})) {
+    if (msg.type === 'assistant') {
+      const text = msg.message.content
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      // Update partial result so UI can show progress:
+      await db.jobs.update(jobId, { partialResult: result += text });
+    }
+    if (msg.type === 'result') result = msg.result;
+  }
+  await db.jobs.update(jobId, { status: 'done', result });
+  await notifyUser(userId, result);
+}
+
+// Submit endpoint:
+app.post('/api/agent/submit', async (req, res) => {
+  const jobId = crypto.randomUUID();
+  await db.jobs.create({ id: jobId, status: 'queued' });
+  queue.add({ jobId, ...req.body });
+  res.json({ jobId });  // client polls /api/jobs/:jobId
+});`)
+)}
+${card("👥","Per-user session manager","Each user gets their own isolated, resumable session","#16a34a",
+  code(`// Pattern: one session per user per project, stored in Redis
+
+class UserAgentManager {
+  async getSession(userId, projectId) {
+    return redis.get('session:' + userId + ':' + projectId);
+  }
+  async saveSession(userId, projectId, sessionId) {
+    await redis.set('session:' + userId + ':' + projectId, sessionId, 'EX', 86400);
+  }
+  async* run(userId, projectId, prompt) {
+    const { query, ClaudeAgentOptions } = await import('@anthropic-ai/claude-agent-sdk');
+    const existing = await this.getSession(userId, projectId);
+    for await (const msg of query({ prompt,
+      options: new ClaudeAgentOptions({
+        allowedTools: ['Read', 'Glob'],
+        resume: existing ?? undefined,
+        cwd: '/workspaces/' + userId + '/' + projectId,
+      })
+    })) {
+      if (msg.type === 'system' && msg.subtype === 'init') {
+        await this.saveSession(userId, projectId, msg.data.session_id);
+      }
+      yield msg;
+    }
+  }
+}`)
+)}
+`,
+
+prod: ()=> `
+${p("Production agent deployments need sandboxing, cost controls, audit trails, and rate limiting.")}
+${card("🐳","Docker sandbox per task","Each run gets an ephemeral container — destroyed when done","#b91c1c",
+  code(`# Dockerfile
+FROM node:20-slim
+RUN npm install -g @anthropic-ai/claude-code
+WORKDIR /workspace
+COPY project-files/ .
+ENTRYPOINT ["claude", "-p"]
+
+# docker-compose.yml
+services:
+  agent:
+    build: .
+    environment:
+      ANTHROPIC_API_KEY: your-key-here
+    volumes:
+      - ./project:/workspace:ro
+      - ./output:/output
+    network_mode: none
+    mem_limit: 512m
+    read_only: true
+    tmpfs:
+      - /tmp:size=100m`)
+)}
+${card("💰","Cost tracking with limits","Per-user daily and per-task limits — prevent runaway costs","#b91c1c",
+  code(`from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+from decimal import Decimal
+
+LIMITS = {'daily_usd': 5.00, 'per_task_usd': 0.50}
+
+async def run_with_cost_control(user_id: str, prompt: str):
+    daily = await get_daily_spend(user_id)
+    if daily >= LIMITS['daily_usd']:
+        raise Exception('Daily agent budget exceeded')
+
+    total_cost = Decimal('0')
+    async for msg in query(prompt=prompt,
+        options=ClaudeAgentOptions(
+            allowed_tools=['Read', 'Glob'],
+            max_turns=20,
+        )
+    ):
+        if isinstance(msg, ResultMessage):
+            total_cost = Decimal(str(msg.total_cost_usd or 0))
+
+    await record_spend(user_id, float(total_cost))
+    return total_cost`)
+)}
+${card("🚦","Rate limiting","Max concurrent sessions + max per minute per user","#b91c1c",
+  code(`from datetime import datetime, timedelta
+from collections import defaultdict
+
+class RateLimiter:
+    MAX_CONCURRENT = 2
+    MAX_PER_MINUTE = 5
+
+    def __init__(self):
+        self.active = defaultdict(set)
+        self.times  = defaultdict(list)
+
+    def can_start(self, user_id):
+        if len(self.active[user_id]) >= self.MAX_CONCURRENT:
+            return False, 'Max concurrent sessions reached'
+        now = datetime.utcnow()
+        recent = [t for t in self.times[user_id]
+                  if now - t < timedelta(minutes=1)]
+        if len(recent) >= self.MAX_PER_MINUTE:
+            return False, 'Rate limit exceeded'
+        return True, ''
+
+    def start(self, uid, sid):
+        self.active[uid].add(sid)
+        self.times[uid].append(datetime.utcnow())
+
+    def finish(self, uid, sid):
+        self.active[uid].discard(sid)`)
+)}
+${card("☁️","Cloud provider auth — no API keys in code","AWS Bedrock, Google Vertex, Azure AI Foundry","#b91c1c",
+  code(`# Amazon Bedrock — use IAM roles
+export CLAUDE_CODE_USE_BEDROCK=1
+export ANTHROPIC_AWS_WORKSPACE_ID=your-workspace-id
+export AWS_REGION=us-east-1
+
+# Google Cloud Vertex AI
+export CLAUDE_CODE_USE_VERTEX=1
+export GOOGLE_CLOUD_PROJECT=your-project
+
+# Azure AI Foundry
+export CLAUDE_CODE_USE_FOUNDRY=1
+
+# SDK works identically — just billed through your cloud provider`)
+)}
+${card("🏥","Health check endpoint","Verify agent infrastructure works before accepting jobs","#b91c1c",
+  code(`app.get('/api/health/agent', async (req, res) => {
+  try {
+    const { query, ClaudeAgentOptions } = await import('@anthropic-ai/claude-agent-sdk');
+    let result = null;
+    for await (const msg of query({
+      prompt: 'What is 2 + 2? Reply with just the number.',
+      options: new ClaudeAgentOptions({ allowedTools: [], maxTurns: 1 })
+    })) {
+      if (msg.type === 'result') result = msg.result;
+    }
+    res.json({ status: 'ok', agent: 'reachable', test: result });
+  } catch (err) {
+    res.status(503).json({ status: 'error', error: err.message });
+  }
+});`)
+)}
+`,
+
+};
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function buildNav(){
+  const inner = document.getElementById("nav-inner");
+  inner.innerHTML = SECTIONS.map(s=>{
+    const isProd = PROD.has(s.id);
+    return `<button
+      class="nav-btn${isProd?" prod":""}${s.id===active?" active":""}"
+      style="--c:${s.color}"
+      onclick="setSection('${s.id}')"
+    >${s.label}</button>`;
+  }).join("");
+}
+
+function buildContent(){
+  const sec = SECTIONS.find(s=>s.id===active);
+  const isProd = PROD.has(active);
+  document.getElementById("content").innerHTML = `
+    <div class="section-header" style="background:${sec.bg};--c:${sec.color}">
+      <h2 style="color:${sec.color}">${sec.title}</h2>
+      ${isProd?'<div class="section-tag">● Production Integration</div>':""}
+    </div>
+    ${CONTENT[active]()}
+  `;
+}
+
+function setSection(id){
+  active=id;
+  buildNav();
+  buildContent();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+// Init
+buildNav();
+buildContent();
+</script>
+</body>
+</html>
